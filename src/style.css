@@ -1,1 +1,28 @@
 @import "tailwindcss";
+
+@theme {
+  --font-display: "Fraunces", "Fraunces Variable", Georgia, serif;
+
+  /* Primary (green) */
+  --color-primary-lighter: #eef6f0;
+  --color-primary-light: #d4e9d9;
+  --color-primary: #1f6039;
+  --color-primary-dark: #174a2c;
+  --color-primary-darker: #0f2f1c;
+  --color-primary-darkest: #0a2012;
+
+  /* Secondary (gold) */
+  --color-secondary: #c98a1b;
+  --color-secondary-dark: #85560f;
+
+  /* Backgrounds */
+  --color-cream: #fbf7ee;
+  --color-sand: #f4ead2;
+
+  /* States */
+  --color-warning: #78350f;
+  --color-warning-light: #fef3c7;
+  --color-danger: #7f1d1d;
+  --color-danger-light: #fee2e2;
+  --color-error: #b91c1c;
+}
