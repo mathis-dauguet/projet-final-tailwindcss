@@ -4,6 +4,8 @@ import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router';
 import { router } from './router';
 import { ThemeProvider } from './utils/ThemeContext';
+import '@fontsource-variable/fraunces';
+import '@fontsource-variable/inter';
 import './style.css';
 
 createRoot(document.getElementById('root')!).render(
