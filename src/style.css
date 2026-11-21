@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-display: "Fraunces", "Fraunces Variable", Georgia, serif;
 
@@ -10,8 +12,10 @@
   --color-primary-dark: #174a2c;
   --color-primary-darker: #0f2f1c;
   --color-primary-darkest: #0a2012;
+  --color-primary-black: #050f09;
 
   /* Secondary (gold) */
+  --color-secondary-light: #e8d3a0;
   --color-secondary: #c98a1b;
   --color-secondary-dark: #85560f;
 
@@ -25,4 +29,10 @@
   --color-danger: #7f1d1d;
   --color-danger-light: #fee2e2;
   --color-error: #b91c1c;
+}
+
+@layer base {
+  body {
+    @apply bg-cream text-primary-darker dark:bg-primary-darkest dark:text-cream;
+  }
 }

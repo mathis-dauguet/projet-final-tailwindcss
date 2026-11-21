@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 
-const liens = [
+const links = [
   { to: '/', label: 'Accueil' },
   { to: '/animaux', label: 'Animaux' },
   { to: '/preparer-sa-visite', label: 'Visite' },
@@ -9,7 +9,7 @@ const liens = [
 
 export default function Footer() {
   return (
-    <footer className="bg-primary-darker px-10 py-8 text-cream">
+    <footer className="bg-primary-darker dark:bg-primary-black px-10 py-8 text-cream">
       <div className="mx-auto flex max-w-5xl flex-col gap-10 md:flex-row md:justify-between">
         <div className="flex max-w-xs flex-col gap-2">
           <h2 className="font-display text-2xl font-bold">Zoo Baobab</h2>
@@ -21,9 +21,9 @@ export default function Footer() {
         <div className="flex gap-16">
           <nav className="flex flex-col gap-2">
             <h3 className="text-xs font-semibold uppercase text-sand">Explorer</h3>
-            {liens.map((lien) => (
-              <Link key={lien.to} to={lien.to} className="text-sm hover:underline">
-                {lien.label}
+            {links.map((link) => (
+              <Link key={link.to} to={link.to} className="text-sm hover:underline">
+                {link.label}
               </Link>
             ))}
           </nav>
