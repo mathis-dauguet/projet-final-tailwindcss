@@ -1,9 +1,7 @@
 import Button from '../components/Button';
-import Card, { type Animal } from '../components/Card';
+import Card from '../components/Card';
+import { animals } from '../src/data/animals';
 import hero from '../src/assets/home/hero.png';
-import lion from '../src/assets/home/lion.png';
-import panda from '../src/assets/home/panda.png';
-import penguin from '../src/assets/home/penguin.png';
 import iconWorkshops from '../src/assets/home/icon-workshops.png';
 import iconPlanet from '../src/assets/home/icon-planet.png';
 import iconAccessible from '../src/assets/home/icon-accessible.png';
@@ -15,32 +13,7 @@ const stats = [
   { value: '350 000', label: 'visiteurs par an' },
 ];
 
-const stars: Animal[] = [
-  {
-    name: "Lion d'Afrique",
-    description: 'Roi de la savane, il vit en groupes familiaux appelés troupes.',
-    status: 'Vulnérable',
-    habitat: 'Savane',
-    schedule: 'Nourrissage à 15h',
-    image: lion,
-  },
-  {
-    name: 'Panda géant',
-    description: "Il passe jusqu'à 12 heures par jour à manger du bambou.",
-    status: 'Vulnérable',
-    habitat: 'Montagne',
-    schedule: 'Repas à 10h30',
-    image: panda,
-  },
-  {
-    name: 'Manchot de Humboldt',
-    description: 'Excellent nageur, il vit sur les côtes rocheuses du Pérou et du Chili.',
-    status: 'Vulnérable',
-    habitat: 'Côtes & océans',
-    schedule: 'Nourrissage à 16h',
-    image: penguin,
-  },
-];
+const stars = animals.slice(0, 3);
 
 const features = [
   {
