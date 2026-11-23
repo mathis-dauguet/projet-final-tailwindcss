@@ -8,7 +8,14 @@ import seaLion from '../assets/animals/sea-lion.jpg';
 import orangutan from '../assets/animals/orangutan.jpg';
 import lemur from '../assets/animals/lemur.jpg';
 
-export type Status = 'Préoccupation mineure' | 'Vulnérable' | 'En danger' | 'En danger critique';
+export type Status = 'leastConcern' | 'vulnerable' | 'endangered' | 'criticallyEndangered';
+
+export const statusLabels: Record<Status, string> = {
+  leastConcern: 'Préoccupation mineure',
+  vulnerable: 'Vulnérable',
+  endangered: 'En danger',
+  criticallyEndangered: 'En danger critique',
+};
 
 export type Habitat = 'Savane' | 'Montagne' | 'Côtes & océans' | 'Forêt tropicale';
 
@@ -27,7 +34,7 @@ export const animals: Animal[] = [
   {
     name: "Lion d'Afrique",
     description: 'Roi de la savane, il vit en groupes familiaux appelés troupes.',
-    status: 'Vulnérable',
+    status: 'vulnerable',
     habitat: 'Savane',
     schedule: 'Nourrissage à 15h',
     image: lion,
@@ -35,7 +42,7 @@ export const animals: Animal[] = [
   {
     name: 'Panda géant',
     description: "Il passe jusqu'à 12 heures par jour à manger du bambou.",
-    status: 'Vulnérable',
+    status: 'vulnerable',
     habitat: 'Montagne',
     schedule: 'Repas à 10h30',
     image: panda,
@@ -43,7 +50,7 @@ export const animals: Animal[] = [
   {
     name: 'Manchot de Humboldt',
     description: 'Excellent nageur, il vit sur les côtes rocheuses du Pérou et du Chili.',
-    status: 'Vulnérable',
+    status: 'vulnerable',
     habitat: 'Côtes & océans',
     schedule: 'Nourrissage à 16h',
     image: penguin,
@@ -51,7 +58,7 @@ export const animals: Animal[] = [
   {
     name: 'Girafe réticulée',
     description: 'Le plus grand animal terrestre, reconnaissable à son pelage en mosaïque.',
-    status: 'En danger',
+    status: 'endangered',
     habitat: 'Savane',
     schedule: 'Rencontre à 11h',
     image: giraffe,
@@ -59,7 +66,7 @@ export const animals: Animal[] = [
   {
     name: 'Rhinocéros noir',
     description: 'Solitaire et discret, il est au cœur de notre programme de conservation.',
-    status: 'En danger critique',
+    status: 'criticallyEndangered',
     habitat: 'Savane',
     schedule: 'Présentation à 14h',
     image: rhino,
@@ -67,7 +74,7 @@ export const animals: Animal[] = [
   {
     name: 'Panda roux',
     description: 'Agile grimpeur, il passe la majeure partie de sa vie dans les arbres.',
-    status: 'En danger',
+    status: 'endangered',
     habitat: 'Montagne',
     schedule: 'Goûter à 16h30',
     image: redPanda,
@@ -75,7 +82,7 @@ export const animals: Animal[] = [
   {
     name: 'Otarie de Californie',
     description: 'Joueuse et curieuse, elle communique par de puissants aboiements.',
-    status: 'Préoccupation mineure',
+    status: 'leastConcern',
     habitat: 'Côtes & océans',
     schedule: 'Spectacle à 12h',
     image: seaLion,
@@ -83,7 +90,7 @@ export const animals: Animal[] = [
   {
     name: 'Orang-outan de Bornéo',
     description: 'Grand singe roux à l’intelligence remarquable, menacé par la déforestation.',
-    status: 'En danger critique',
+    status: 'criticallyEndangered',
     habitat: 'Forêt tropicale',
     schedule: 'Enrichissement à 13h30',
     image: orangutan,
@@ -91,7 +98,7 @@ export const animals: Animal[] = [
   {
     name: 'Lémurien catta',
     description: 'Originaire de Madagascar, il se reconnaît à sa longue queue annelée.',
-    status: 'En danger',
+    status: 'endangered',
     habitat: 'Forêt tropicale',
     schedule: 'Nourrissage à 10h',
     image: lemur,

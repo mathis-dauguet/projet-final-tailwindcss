@@ -52,7 +52,7 @@ export default function Home() {
             <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white dark:bg-secondary dark:text-primary-darkest">
               Ouvert 7j/7
             </span>
-            <h1 className="font-display text-4xl leading-tight font-bold md:text-6xl md:leading-[66px]">
+            <h1 className="font-display text-4xl leading-tight font-bold md:text-6xl md:leading-16.5">
               À la rencontre de la vie sauvage
             </h1>
             <p className="text-base leading-7 text-primary-dark md:text-lg dark:text-sand">
@@ -122,7 +122,7 @@ export default function Home() {
                 <img src={feature.icon} alt="" width={feature.width} height={feature.height} className="rounded-lg" />
               </div>
               <h3 className="font-display text-xl font-bold">{feature.title}</h3>
-              <p className="text-[15px] leading-[22px] text-primary-dark dark:text-sand">{feature.text}</p>
+              <p className="text-[15px] leading-5.5 text-primary-dark dark:text-sand">{feature.text}</p>
             </div>
           ))}
         </div>

@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type SubmitEvent } from 'react';
 import { Link } from 'react-router';
 import Checkbox from '../components/Checkbox';
+import Field, { labelClass } from '../components/Field';
 import Input from '../components/Input';
+import Required from '../components/Required';
 import Select from '../components/Select';
 
 const slots = [
@@ -28,16 +30,15 @@ function getSummary({ adults, children, audioguide, restaurant }: Choices) {
 function readChoices(form: HTMLFormElement): Choices {
   const data = new FormData(form);
   return {
-    adults: Math.max(0, Number(data.get('adults')) || 0),
+    adults: Math.max(1, Number(data.get('adults')) || 1),
     children: Math.max(0, Number(data.get('children')) || 0),
     audioguide: data.has('audioguide'),
     restaurant: data.has('restaurant'),
   };
 }
 
-const formatPrice = (value: number) => `${value}\u00a0€`;
+const formatPrice = (value: number) => `${value} €`;
 
-// "2026-11-12" -> "jeudi 12 novembre 2026" (T00:00 keeps the local day instead of UTC)
 const formatDate = (value: string) =>
   new Date(`${value}T00:00`).toLocaleDateString('fr-FR', {
     weekday: 'long',
@@ -46,37 +47,48 @@ const formatDate = (value: string) =>
     year: 'numeric',
   });
 
+function getToday() {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  return now.toISOString().slice(0, 10);
+}
+
 type Confirmation = { firstName: string; email: string; date: string; total: number };
 
 const cardBox = 'rounded-2xl border border-primary-light bg-white dark:border-primary-dark dark:bg-primary-darker';
 const sectionTitle = 'font-display text-lg font-bold';
-const label = 'text-xs font-semibold';
-function Required() {
-  return (
-    <span className="text-error dark:text-danger-light" aria-hidden="true">
-      {' '}*
-    </span>
-  );
-}
 
 export default function Reservation() {
   const [summary, setSummary] = useState(() => getSummary(DEFAULTS));
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
+  const [hasError, setHasError] = useState(false);
   const confirmationRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (confirmation) confirmationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [confirmation]);
 
-  const updateSummary = (event: FormEvent<HTMLFormElement>) => setSummary(getSummary(readChoices(event.currentTarget)));
-  // The reset event fires before the fields are cleared, so we use the defaults directly
-  const resetSummary = () => {
-    setSummary(getSummary(DEFAULTS));
+  const updateSummary = (event: ChangeEvent<HTMLFormElement>) => {
+    const form = event.currentTarget;
+    setSummary(getSummary(readChoices(form)));
+    if (hasError && form.checkValidity()) setHasError(false);
+  };
+
+  // Fired by the browser for each invalid field when the user tries to submit
+  const showError = () => {
+    setHasError(true);
     setConfirmation(null);
   };
 
-  const confirm = (event: FormEvent<HTMLFormElement>) => {
+  const resetSummary = () => {
+    setSummary(getSummary(DEFAULTS));
+    setConfirmation(null);
+    setHasError(false);
+  };
+
+  const confirm = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setHasError(false);
     const data = new FormData(event.currentTarget);
     setConfirmation({
       firstName: String(data.get('name')).trim().split(' ')[0],
@@ -86,11 +98,17 @@ export default function Reservation() {
     });
   };
 
+  const summaryRows = [
+    { label: 'Adultes', value: summary.adults },
+    { label: 'Enfants', value: summary.children },
+    { label: 'Options', value: summary.options },
+  ];
+
   return (
     <>
       {/* Banner */}
       <section className="bg-sand dark:bg-primary-darker">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-8 md:py-12">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 md:py-12">
           <nav aria-label="Fil d'Ariane" className="text-xs text-primary-dark dark:text-sand">
             <ol className="flex items-center gap-1.5">
               <li>
@@ -111,8 +129,14 @@ export default function Reservation() {
 
       {/* Form */}
       <section className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-8 md:py-12 lg:grid-cols-3">
-        {/* Confirmation */}
+        {/* Confirmation / error */}
         <div ref={confirmationRef} role="status" className="empty:hidden lg:col-span-3">
+          {hasError && (
+            <div className="flex flex-col gap-1 rounded-2xl border-2 border-error bg-danger-light px-5 py-4 text-danger dark:border-danger-light dark:bg-danger dark:text-danger-light">
+              <p className="font-display text-lg font-bold">Réservation incomplète</p>
+              <p className="text-sm">Certains champs sont manquants ou invalides. Vérifiez les champs en rouge.</p>
+            </div>
+          )}
           {confirmation && (
             <div className="flex flex-col gap-1 rounded-2xl border-2 border-primary bg-primary-lighter px-5 py-4 dark:border-secondary dark:bg-primary-darker">
               <p className="font-display text-lg font-bold">Réservation confirmée !</p>
@@ -126,6 +150,7 @@ export default function Reservation() {
 
         <form
           onSubmit={confirm}
+          onInvalid={showError}
           onChange={updateSummary}
           onReset={resetSummary}
           className={`${cardBox} flex flex-col gap-6 p-5 md:p-6 lg:col-span-2`}
@@ -134,18 +159,10 @@ export default function Reservation() {
           <div className="flex flex-col gap-4">
             <h2 className={sectionTitle}>1. Vos coordonnées</h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="name" className={label}>
-                  Nom complet
-                  <Required />
-                </label>
+              <Field label="Nom complet" htmlFor="name" required>
                 <Input id="name" name="name" autoComplete="name" required />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="email" className={label}>
-                  E-mail
-                  <Required />
-                </label>
+              </Field>
+              <Field label="E-mail" htmlFor="email" required>
                 <Input
                   id="email"
                   name="email"
@@ -154,7 +171,7 @@ export default function Reservation() {
                   placeholder="vous@exemple.fr"
                   required
                 />
-              </div>
+              </Field>
             </div>
           </div>
 
@@ -162,41 +179,25 @@ export default function Reservation() {
           <div className="flex flex-col gap-4">
             <h2 className={sectionTitle}>2. Votre visite</h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="date" className={label}>
-                  Date de visite
-                  <Required />
-                </label>
-                <Input id="date" name="date" type="date" required />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="visit-type" className={label}>
-                  Type de visite
-                  <Required />
-                </label>
+              <Field label="Date de visite" htmlFor="date" required>
+                <Input id="date" name="date" type="date" min={getToday()} required />
+              </Field>
+              <Field label="Type de visite" htmlFor="visit-type" required>
                 <Select id="visit-type" name="visitType" placeholder="Sélectionner" required>
                   <option value="libre">Visite libre</option>
                   <option value="guidee">Visite guidée</option>
                 </Select>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="adults" className={label}>
-                  Adultes (24 €)
-                  <Required />
-                </label>
+              </Field>
+              <Field label={`Adultes (${formatPrice(PRICES.adult)})`} htmlFor="adults" required>
                 <Input id="adults" name="adults" type="number" min={1} defaultValue={DEFAULTS.adults} required />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="children" className={label}>
-                  Enfants 3-11 ans (14 €)
-                  <Required />
-                </label>
+              </Field>
+              <Field label={`Enfants 3-11 ans (${formatPrice(PRICES.child)})`} htmlFor="children" required>
                 <Input id="children" name="children" type="number" min={0} defaultValue={DEFAULTS.children} required />
-              </div>
+              </Field>
             </div>
 
             <fieldset className="flex flex-col gap-1.5">
-              <legend className={`${label} mb-1.5`}>
+              <legend className={`${labelClass} mb-1.5`}>
                 Créneau d'arrivée
                 <Required />
               </legend>
@@ -204,7 +205,15 @@ export default function Reservation() {
                 {slots.map((slot) => (
                   <label
                     key={slot.value}
-                    className="flex cursor-pointer flex-col items-center gap-0.5 rounded-lg border border-primary-light px-2 py-2.5 text-center transition-colors hover:bg-primary-lighter has-checked:border-primary has-checked:bg-primary has-checked:text-white has-focus-visible:ring-2 has-focus-visible:ring-primary-light dark:border-primary-dark dark:hover:bg-primary-dark dark:has-checked:border-secondary dark:has-checked:bg-secondary dark:has-checked:text-primary-darkest dark:has-focus-visible:ring-secondary/30"
+                    className="
+                      flex cursor-pointer flex-col items-center gap-0.5 rounded-lg border border-primary-light px-2 py-2.5 text-center transition-colors
+                      hover:bg-primary-lighter
+                      has-checked:border-primary has-checked:bg-primary has-checked:text-white
+                      has-focus-visible:ring-2 has-focus-visible:ring-primary-light
+                      dark:border-primary-dark dark:hover:bg-primary-dark
+                      dark:has-checked:border-secondary dark:has-checked:bg-secondary dark:has-checked:text-primary-darkest
+                      dark:has-focus-visible:ring-secondary/30
+                    "
                   >
                     <input
                       type="radio"
@@ -227,21 +236,15 @@ export default function Reservation() {
             <h2 className={sectionTitle}>3. Options</h2>
             <div className="flex flex-col gap-2.5">
               <Checkbox name="audioguide" defaultChecked={DEFAULTS.audioguide}>
-                Audioguide (+3 € / pers.)
+                Audioguide (+{formatPrice(PRICES.audioguide)} / pers.)
               </Checkbox>
-              <Checkbox name="restaurant" defaultChecked={DEFAULTS.restaurant}>Repas au restaurant du zoo (+12 € / pers.)</Checkbox>
+              <Checkbox name="restaurant" defaultChecked={DEFAULTS.restaurant}>
+                Repas au restaurant du zoo (+{formatPrice(PRICES.restaurant)} / pers.)
+              </Checkbox>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="message" className={label}>
-                Message ou besoin particulier
-              </label>
-              <Input
-                id="message"
-                name="message"
-               
-                placeholder="Accessibilité, allergies, anniversaire…"
-              />
-            </div>
+            <Field label="Message ou besoin particulier" htmlFor="message">
+              <Input id="message" name="message" placeholder="Accessibilité, allergies, anniversaire…" />
+            </Field>
           </div>
 
           <Checkbox name="terms" required>
@@ -269,18 +272,12 @@ export default function Reservation() {
         <aside className={`${cardBox} flex flex-col gap-4 self-start p-5 md:p-6`}>
           <h2 className={sectionTitle}>Récapitulatif</h2>
           <dl className="flex flex-col gap-2 text-sm">
-            <div className="flex justify-between">
-              <dt>Adultes</dt>
-              <dd className="font-semibold">{formatPrice(summary.adults)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt>Enfants</dt>
-              <dd className="font-semibold">{formatPrice(summary.children)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt>Options</dt>
-              <dd className="font-semibold">{formatPrice(summary.options)}</dd>
-            </div>
+            {summaryRows.map((row) => (
+              <div key={row.label} className="flex justify-between">
+                <dt>{row.label}</dt>
+                <dd className="font-semibold">{formatPrice(row.value)}</dd>
+              </div>
+            ))}
             <div className="mt-2 flex items-center justify-between border-t border-primary-light pt-4 dark:border-primary-dark">
               <dt className="font-semibold">Total</dt>
               <dd className="font-display text-3xl font-bold text-primary dark:text-secondary" aria-live="polite">
