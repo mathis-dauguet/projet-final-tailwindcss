@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Button from '../components/Button';
 import Card from '../components/Card';
+import PageHeader from '../components/PageHeader';
 import { animals, habitats, type Habitat } from '../src/data/animals';
 
 type Filter = Habitat | 'Tous';
@@ -22,19 +23,11 @@ export default function Animals() {
 
   return (
     <>
-      {/* Header */}
-      <section className="bg-sand dark:bg-primary-darker">
-        <div className={`${container} flex flex-col gap-4 py-10 md:py-16`}>
-          <p className="text-[13px] font-semibold uppercase text-secondary-dark dark:text-secondary-light">
-            Nos pensionnaires
-          </p>
-          <h1 className="font-display text-4xl leading-tight font-bold md:text-5xl">Les animaux du parc</h1>
-          <p className="max-w-2xl text-base leading-7 text-primary-dark md:text-lg dark:text-sand">
-            Plus de 200 espèces venues des cinq continents. Découvrez leurs habitats, leur statut de
-            conservation et les horaires des nourrissages.
-          </p>
-        </div>
-      </section>
+      <PageHeader
+        breadcrumb="Nos pensionnaires"
+        title="Nos animaux"
+        subtitle="Parcourez nos quatre zones et trouvez vos espèces préférées."
+      />
 
       {/* Filters + list */}
       <section className={`${container} flex flex-col gap-8 py-10 md:py-12`}>
