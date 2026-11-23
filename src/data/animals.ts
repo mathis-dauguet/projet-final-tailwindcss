@@ -1,7 +1,6 @@
 import lion from '../assets/home/lion.png';
 import panda from '../assets/home/panda.png';
 import penguin from '../assets/home/penguin.png';
-// Photos Wikimedia Commons — crédits et licences dans src/assets/animals/CREDITS.md
 import giraffe from '../assets/animals/giraffe.jpg';
 import rhino from '../assets/animals/rhino.jpg';
 import redPanda from '../assets/animals/red-panda.jpg';
