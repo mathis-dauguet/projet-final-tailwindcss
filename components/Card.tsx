@@ -1,10 +1,13 @@
-export type Animal = {
-  name: string;
-  description: string;
-  status: string;
-  habitat: string;
-  schedule: string;
-  image: string;
+import type { Animal, Status } from '../src/data/animals';
+
+export type { Animal };
+
+const statusStyles: Record<Status, string> = {
+  'Préoccupation mineure':
+    'bg-primary-lighter text-primary-dark dark:bg-primary-dark dark:text-primary-light',
+  Vulnérable: 'bg-warning-light text-warning dark:bg-warning-darkest dark:text-warning-pale',
+  'En danger': 'bg-danger-light text-danger dark:bg-danger dark:text-danger-light',
+  'En danger critique': 'bg-error text-white',
 };
 
 export default function Card({ animal }: { animal: Animal }) {
@@ -16,7 +19,7 @@ export default function Card({ animal }: { animal: Animal }) {
 
       <div className="flex flex-col gap-3 p-5">
         <div className="flex flex-wrap gap-2">
-          <span className="rounded-full bg-warning-light px-3 py-1 text-xs font-semibold text-warning dark:bg-warning-darkest dark:text-warning-pale">
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[animal.status]}`}>
             {animal.status}
           </span>
           <span className="rounded-full bg-sand px-3 py-1 text-xs font-semibold text-secondary-dark dark:bg-primary-dark dark:text-secondary-light">
