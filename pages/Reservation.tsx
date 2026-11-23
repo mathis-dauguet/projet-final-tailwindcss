@@ -1,121 +1,114 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { Link } from 'react-router';
+import { useEffect, useRef, useState, type SyntheticEvent } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
+import Button from '../components/Button';
 import Checkbox from '../components/Checkbox';
+import Field, { labelClass } from '../components/Field';
 import Input from '../components/Input';
+import PageHeader from '../components/PageHeader';
+import Required from '../components/Required';
 import Select from '../components/Select';
+import { cardClass } from '../src/utils/styles';
+import {
+  DEFAULT_VALUES,
+  ERROR_ORDER,
+  PRICES,
+  RULES,
+  SLOTS,
+  formatDate,
+  formatPrice,
+  getSummary,
+  getToday,
+  type Confirmation,
+  type FormValues,
+} from '../src/utils/reservation';
 
-const slots = [
-  { value: 'matin', label: 'Matin', hours: '9h – 11h' },
-  { value: 'midi', label: 'Midi', hours: '11h – 14h' },
-  { value: 'apres-midi', label: 'Après-midi', hours: '14h – 17h' },
-];
+const sectionTitle = 'font-display text-xl font-bold';
 
-const PRICES = { adult: 24, child: 14, audioguide: 3, restaurant: 12 };
-const DEFAULTS = { adults: 1, children: 0, audioguide: true, restaurant: false };
-
-type Choices = typeof DEFAULTS;
-
-function getSummary({ adults, children, audioguide, restaurant }: Choices) {
-  const optionsPerPerson = (audioguide ? PRICES.audioguide : 0) + (restaurant ? PRICES.restaurant : 0);
-  const summary = {
-    adults: adults * PRICES.adult,
-    children: children * PRICES.child,
-    options: optionsPerPerson * (adults + children),
-  };
-  return { ...summary, total: summary.adults + summary.children + summary.options };
-}
-
-function readChoices(form: HTMLFormElement): Choices {
-  const data = new FormData(form);
-  return {
-    adults: Math.max(0, Number(data.get('adults')) || 0),
-    children: Math.max(0, Number(data.get('children')) || 0),
-    audioguide: data.has('audioguide'),
-    restaurant: data.has('restaurant'),
-  };
-}
-
-const formatPrice = (value: number) => `${value}\u00a0€`;
-
-// "2026-11-12" -> "jeudi 12 novembre 2026" (T00:00 keeps the local day instead of UTC)
-const formatDate = (value: string) =>
-  new Date(`${value}T00:00`).toLocaleDateString('fr-FR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
-
-type Confirmation = { firstName: string; email: string; date: string; total: number };
-
-const cardBox = 'rounded-2xl border border-primary-light bg-white dark:border-primary-dark dark:bg-primary-darker';
-const sectionTitle = 'font-display text-lg font-bold';
-const label = 'text-xs font-semibold';
-function Required() {
-  return (
-    <span className="text-error dark:text-danger-light" aria-hidden="true">
-      {' '}*
-    </span>
-  );
-}
+const slotClass = `
+  flex cursor-pointer flex-col items-center gap-0.5 rounded-lg border border-primary-light px-2 py-3.5 text-center transition-colors
+  hover:bg-primary-lighter
+  has-checked:border-primary has-checked:bg-primary has-checked:text-white
+  has-focus-visible:ring-2 has-focus-visible:ring-primary-light
+  dark:border-primary-dark dark:hover:bg-primary-dark
+  dark:has-checked:border-secondary dark:has-checked:bg-secondary dark:has-checked:text-primary-darkest
+  dark:has-focus-visible:ring-secondary/30
+`;
 
 export default function Reservation() {
-  const [summary, setSummary] = useState(() => getSummary(DEFAULTS));
+  const {
+    register,
+    handleSubmit,
+    reset,
+    control,
+    formState: { errors },
+  } = useForm<FormValues>({ defaultValues: DEFAULT_VALUES });
+  const [adults, children, audioguide, restaurant] = useWatch({
+    control,
+    name: ['adults', 'children', 'audioguide', 'restaurant'],
+  });
+  const summary = getSummary({ adults, children, audioguide, restaurant });
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
   const confirmationRef = useRef<HTMLDivElement>(null);
+  const errorMessages = ERROR_ORDER.map((name) => errors[name]?.message).filter(Boolean);
 
   useEffect(() => {
     if (confirmation) confirmationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [confirmation]);
 
-  const updateSummary = (event: FormEvent<HTMLFormElement>) => setSummary(getSummary(readChoices(event.currentTarget)));
-  // The reset event fires before the fields are cleared, so we use the defaults directly
-  const resetSummary = () => {
-    setSummary(getSummary(DEFAULTS));
-    setConfirmation(null);
-  };
-
-  const confirm = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
+  const onValid = (values: FormValues) => {
     setConfirmation({
-      firstName: String(data.get('name')).trim().split(' ')[0],
-      email: String(data.get('email')),
-      date: formatDate(String(data.get('date'))),
-      total: summary.total,
+      firstName: values.name.trim().split(' ')[0],
+      email: values.email,
+      date: formatDate(values.date),
+      total: getSummary(values).total,
     });
   };
 
+  const handleReset = (event: SyntheticEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    reset();
+    setConfirmation(null);
+  };
+
+  const errorProps = (name: keyof FormValues) => ({
+    id: name,
+    'aria-invalid': Boolean(errors[name]),
+    'aria-describedby': errors[name] ? `${name}-error` : undefined,
+  });
+
+  const summaryRows = [
+    { label: 'Adultes', value: summary.adults },
+    { label: 'Enfants', value: summary.children },
+    { label: 'Options', value: summary.options },
+  ];
+
   return (
     <>
-      {/* Banner */}
-      <section className="bg-sand dark:bg-primary-darker">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-8 md:py-12">
-          <nav aria-label="Fil d'Ariane" className="text-xs text-primary-dark dark:text-sand">
-            <ol className="flex items-center gap-1.5">
-              <li>
-                <Link to="/" className="hover:underline">
-                  Accueil
-                </Link>
-              </li>
-              <li aria-hidden="true">/</li>
-              <li aria-current="page">Réserver</li>
-            </ol>
-          </nav>
-          <h1 className="font-display text-4xl font-bold md:text-5xl">Réserver mes billets</h1>
-          <p className="text-base text-primary-dark dark:text-sand">
-            Remplissez le formulaire : vous recevez vos billets par e-mail.
-          </p>
-        </div>
-      </section>
+      <PageHeader
+        breadcrumb="Réserver"
+        title="Réserver mes billets"
+        subtitle="Remplissez le formulaire : vous recevrez vos billets par e-mail."
+      />
 
-      {/* Form */}
-      <section className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-8 md:py-12 lg:grid-cols-3">
-        {/* Confirmation */}
-        <div ref={confirmationRef} role="status" className="empty:hidden lg:col-span-3">
+      <section className="mx-auto grid w-full max-w-6xl gap-x-8 gap-y-6 px-4 pt-10 pb-16 md:pb-36 lg:grid-cols-[1fr_22rem]">
+        {errorMessages.length > 0 && (
+          <div
+            role="alert"
+            className="col-span-full flex flex-col gap-1.5 rounded-2xl border-2 border-error bg-danger-light p-5 text-sm text-danger dark:border-danger-light dark:bg-danger dark:text-danger-light"
+          >
+            <p className="font-bold">Le formulaire contient des erreurs :</p>
+            <ul className="flex list-inside list-disc flex-col gap-1.5">
+              {errorMessages.map((message) => (
+                <li key={message}>{message}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div ref={confirmationRef} role="status" className="col-span-full empty:hidden">
           {confirmation && (
-            <div className="flex flex-col gap-1 rounded-2xl border-2 border-primary bg-primary-lighter px-5 py-4 dark:border-secondary dark:bg-primary-darker">
-              <p className="font-display text-lg font-bold">Réservation confirmée !</p>
+            <div className="flex flex-col gap-1 rounded-2xl border-2 border-primary bg-primary-lighter p-6 dark:border-secondary dark:bg-primary-darker">
+              <p className="font-display text-xl font-bold">Réservation confirmée !</p>
               <p className="text-sm text-primary-dark dark:text-sand">
                 Merci {confirmation.firstName} ! Vos billets ({formatPrice(confirmation.total)}) seront envoyés à{' '}
                 {confirmation.email}. Rendez-vous le {confirmation.date}.
@@ -125,163 +118,121 @@ export default function Reservation() {
         </div>
 
         <form
-          onSubmit={confirm}
-          onChange={updateSummary}
-          onReset={resetSummary}
-          className={`${cardBox} flex flex-col gap-6 p-5 md:p-6 lg:col-span-2`}
+          noValidate
+          onSubmit={handleSubmit(onValid, () => setConfirmation(null))}
+          onReset={handleReset}
+          className={`${cardClass} flex flex-col gap-8 p-5 md:p-8`}
         >
-          {/* 1. Contact */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-5">
             <h2 className={sectionTitle}>1. Vos coordonnées</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="name" className={label}>
-                  Nom complet
-                  <Required />
-                </label>
-                <Input id="name" name="name" autoComplete="name" required />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="email" className={label}>
-                  E-mail
-                  <Required />
-                </label>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field label="Nom complet" htmlFor="name" required error={errors.name?.message}>
+                <Input {...errorProps('name')} {...register('name', RULES.name)} autoComplete="name" required />
+              </Field>
+              <Field label="E-mail" htmlFor="email" required error={errors.email?.message}>
                 <Input
-                  id="email"
-                  name="email"
+                  {...errorProps('email')}
+                  {...register('email', RULES.email)}
                   type="email"
                   autoComplete="email"
                   placeholder="vous@exemple.fr"
                   required
                 />
-              </div>
+              </Field>
             </div>
           </div>
 
-          {/* 2. Visit */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-5">
             <h2 className={sectionTitle}>2. Votre visite</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="date" className={label}>
-                  Date de visite
-                  <Required />
-                </label>
-                <Input id="date" name="date" type="date" required />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="visit-type" className={label}>
-                  Type de visite
-                  <Required />
-                </label>
-                <Select id="visit-type" name="visitType" placeholder="Sélectionner" required>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field label="Date de visite" htmlFor="date" required error={errors.date?.message}>
+                <Input {...errorProps('date')} {...register('date', RULES.date)} type="date" min={getToday()} required />
+              </Field>
+              <Field label="Type de visite" htmlFor="visitType" required>
+                <Select id="visitType" {...register('visitType')} required>
                   <option value="libre">Visite libre</option>
                   <option value="guidee">Visite guidée</option>
                 </Select>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="adults" className={label}>
-                  Adultes (24 €)
-                  <Required />
-                </label>
-                <Input id="adults" name="adults" type="number" min={1} defaultValue={DEFAULTS.adults} required />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="children" className={label}>
-                  Enfants 3-11 ans (14 €)
-                  <Required />
-                </label>
-                <Input id="children" name="children" type="number" min={0} defaultValue={DEFAULTS.children} required />
-              </div>
+              </Field>
+              <Field
+                label={`Adultes (${formatPrice(PRICES.adult)})`}
+                htmlFor="adults"
+                required
+                error={errors.adults?.message}
+              >
+                <Input {...errorProps('adults')} {...register('adults', RULES.adults)} type="number" min={1} required />
+              </Field>
+              <Field
+                label={`Enfants 3-11 ans (${formatPrice(PRICES.child)})`}
+                htmlFor="children"
+                required
+                error={errors.children?.message}
+              >
+                <Input
+                  {...errorProps('children')}
+                  {...register('children', RULES.children)}
+                  type="number"
+                  min={0}
+                  required
+                />
+              </Field>
             </div>
 
-            <fieldset className="flex flex-col gap-1.5">
-              <legend className={`${label} mb-1.5`}>
+            <fieldset>
+              <legend className={`${labelClass} mb-5`}>
                 Créneau d'arrivée
                 <Required />
               </legend>
-              <div className="grid grid-cols-3 gap-2">
-                {slots.map((slot) => (
-                  <label
-                    key={slot.value}
-                    className="flex cursor-pointer flex-col items-center gap-0.5 rounded-lg border border-primary-light px-2 py-2.5 text-center transition-colors hover:bg-primary-lighter has-checked:border-primary has-checked:bg-primary has-checked:text-white has-focus-visible:ring-2 has-focus-visible:ring-primary-light dark:border-primary-dark dark:hover:bg-primary-dark dark:has-checked:border-secondary dark:has-checked:bg-secondary dark:has-checked:text-primary-darkest dark:has-focus-visible:ring-secondary/30"
-                  >
-                    <input
-                      type="radio"
-                      name="slot"
-                      value={slot.value}
-                      defaultChecked={slot.value === 'matin'}
-                      required
-                      className="sr-only"
-                    />
-                    <span className="text-xs font-semibold">{slot.label}</span>
-                    <span className="text-[11px] opacity-80">{slot.hours}</span>
+              <div className="grid grid-cols-3 gap-3">
+                {SLOTS.map((slot) => (
+                  <label key={slot.value} className={slotClass}>
+                    <input type="radio" value={slot.value} {...register('slot')} className="sr-only" />
+                    <span className="text-sm font-semibold">{slot.label}</span>
+                    <span className="text-xs opacity-80">{slot.hours}</span>
                   </label>
                 ))}
               </div>
             </fieldset>
           </div>
 
-          {/* 3. Options */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             <h2 className={sectionTitle}>3. Options</h2>
-            <div className="flex flex-col gap-2.5">
-              <Checkbox name="audioguide" defaultChecked={DEFAULTS.audioguide}>
-                Audioguide (+3 € / pers.)
-              </Checkbox>
-              <Checkbox name="restaurant" defaultChecked={DEFAULTS.restaurant}>Repas au restaurant du zoo (+12 € / pers.)</Checkbox>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="message" className={label}>
-                Message ou besoin particulier
-              </label>
-              <Input
-                id="message"
-                name="message"
-               
-                placeholder="Accessibilité, allergies, anniversaire…"
-              />
-            </div>
+            <Checkbox {...register('audioguide')}>
+              Audioguide (+{formatPrice(PRICES.audioguide)} / pers.)
+            </Checkbox>
+            <Checkbox {...register('restaurant')}>
+              Repas au restaurant du zoo (+{formatPrice(PRICES.restaurant)} / pers.)
+            </Checkbox>
+            <Field label="Message ou besoin particulier" htmlFor="message">
+              <Input id="message" {...register('message')} placeholder="Accessibilité, allergies, anniversaire…" />
+            </Field>
           </div>
 
-          <Checkbox name="terms" required>
+          <Checkbox {...register('terms', RULES.terms)} required aria-invalid={Boolean(errors.terms)}>
             J'accepte les conditions générales de vente et la politique de confidentialité.
             <Required />
           </Checkbox>
 
           <div className="flex flex-col gap-3 sm:flex-row">
-            <button
-              type="submit"
-              className="flex-1 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-dark dark:bg-secondary dark:text-primary-darkest dark:hover:bg-secondary-light"
-            >
+            <Button type="submit" className="flex-1">
               Confirmer la réservation
-            </button>
-            <button
-              type="reset"
-              className="rounded-full border-2 border-primary px-6 py-3 text-sm font-semibold text-primary-dark transition-colors hover:bg-primary-light dark:border-secondary-light dark:text-sand dark:hover:bg-primary-dark"
-            >
+            </Button>
+            <Button type="reset" variant="secondary">
               Effacer
-            </button>
+            </Button>
           </div>
         </form>
 
-        {/* Summary */}
-        <aside className={`${cardBox} flex flex-col gap-4 self-start p-5 md:p-6`}>
+        <aside className={`${cardClass} flex flex-col gap-3 self-start p-6`}>
           <h2 className={sectionTitle}>Récapitulatif</h2>
-          <dl className="flex flex-col gap-2 text-sm">
-            <div className="flex justify-between">
-              <dt>Adultes</dt>
-              <dd className="font-semibold">{formatPrice(summary.adults)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt>Enfants</dt>
-              <dd className="font-semibold">{formatPrice(summary.children)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt>Options</dt>
-              <dd className="font-semibold">{formatPrice(summary.options)}</dd>
-            </div>
-            <div className="mt-2 flex items-center justify-between border-t border-primary-light pt-4 dark:border-primary-dark">
+          <dl className="flex flex-col gap-3 text-sm">
+            {summaryRows.map((row) => (
+              <div key={row.label} className="flex justify-between">
+                <dt>{row.label}</dt>
+                <dd className="font-semibold">{formatPrice(row.value)}</dd>
+              </div>
+            ))}
+            <div className="flex items-center justify-between border-t border-primary-light py-4 dark:border-primary-dark">
               <dt className="font-semibold">Total</dt>
               <dd className="font-display text-3xl font-bold text-primary dark:text-secondary" aria-live="polite">
                 {formatPrice(summary.total)}

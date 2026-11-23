@@ -5,6 +5,7 @@ import hero from '../src/assets/home/hero.png';
 import iconWorkshops from '../src/assets/home/icon-workshops.png';
 import iconPlanet from '../src/assets/home/icon-planet.png';
 import iconAccessible from '../src/assets/home/icon-accessible.png';
+import { cardClass } from '../src/utils/styles';
 
 const stats = [
   { value: '200+', label: 'espèces' },
@@ -40,7 +41,6 @@ const features = [
 ];
 
 const container = 'mx-auto w-full max-w-6xl px-4';
-const cardBox = 'rounded-2xl border border-primary-light bg-white dark:border-primary-dark dark:bg-primary-darker';
 
 export default function Home() {
   return (
@@ -52,7 +52,7 @@ export default function Home() {
             <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white dark:bg-secondary dark:text-primary-darkest">
               Ouvert 7j/7
             </span>
-            <h1 className="font-display text-4xl leading-tight font-bold md:text-6xl md:leading-[66px]">
+            <h1 className="font-display text-4xl leading-tight font-bold md:text-6xl md:leading-16.5">
               À la rencontre de la vie sauvage
             </h1>
             <p className="text-base leading-7 text-primary-dark md:text-lg dark:text-sand">
@@ -82,7 +82,7 @@ export default function Home() {
       {/* Stats */}
       <section className={`${container} grid grid-cols-2 gap-4 py-8 md:grid-cols-4`}>
         {stats.map((stat) => (
-          <div key={stat.label} className={`${cardBox} flex flex-col items-center gap-1 p-5 text-center`}>
+          <div key={stat.label} className={`${cardClass} flex flex-col items-center gap-1 p-5 text-center`}>
             <p className="font-display text-3xl font-bold text-primary dark:text-secondary">{stat.value}</p>
             <p className="text-sm text-primary-dark dark:text-sand">{stat.label}</p>
           </div>
@@ -117,12 +117,12 @@ export default function Home() {
         </h2>
         <div className="grid gap-6 md:grid-cols-3">
           {features.map((feature) => (
-            <div key={feature.title} className={`${cardBox} flex flex-col gap-3 p-6`}>
+            <div key={feature.title} className={`${cardClass} flex flex-col gap-3 p-6`}>
               <div className="flex size-12 items-center justify-center rounded-xl bg-primary-light dark:bg-primary-dark">
                 <img src={feature.icon} alt="" width={feature.width} height={feature.height} className="rounded-lg" />
               </div>
               <h3 className="font-display text-xl font-bold">{feature.title}</h3>
-              <p className="text-[15px] leading-[22px] text-primary-dark dark:text-sand">{feature.text}</p>
+              <p className="text-[15px] leading-5.5 text-primary-dark dark:text-sand">{feature.text}</p>
             </div>
           ))}
         </div>

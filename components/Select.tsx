@@ -1,5 +1,5 @@
 import type { ComponentProps, ReactNode } from 'react';
-import { fieldClass } from './Input';
+import { fieldClass } from '../src/utils/styles';
 
 type SelectProps = Omit<ComponentProps<'select'>, 'className'> & {
   placeholder?: string;
@@ -11,7 +11,12 @@ export default function Select({ placeholder, children, ...props }: SelectProps)
     <div className="relative">
       <select
         defaultValue={placeholder !== undefined ? '' : undefined}
-        className={`${fieldClass} cursor-pointer appearance-none pr-9 pl-3 invalid:text-primary-dark/60 dark:invalid:text-sand/60`}
+        className={`
+          ${fieldClass}
+          cursor-pointer appearance-none pr-9
+          invalid:text-primary-dark/60
+          dark:invalid:text-sand/60
+        `}
         {...props}
       >
         {placeholder !== undefined && (
