@@ -1,5 +1,5 @@
 import type { ComponentProps, ReactNode } from 'react';
-import { fieldClass } from '../src/utils/fieldClass';
+import { fieldClass } from '../src/utils/styles';
 
 type SelectProps = Omit<ComponentProps<'select'>, 'className'> & {
   placeholder?: string;

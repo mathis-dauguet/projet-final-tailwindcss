@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react';
-import { fieldClass } from '../src/utils/fieldClass';
+import { fieldClass } from '../src/utils/styles';
 
 type InputProps = Omit<ComponentProps<'input'>, 'className'>;
 

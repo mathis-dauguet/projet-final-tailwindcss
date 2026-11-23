@@ -1,9 +1,8 @@
 import Button from '../components/Button';
-import { Link } from 'react-router';
+import PageHeader from '../components/PageHeader';
+import { cardClass } from '../src/utils/styles';
 
 const container = 'mx-auto w-full max-w-6xl px-4';
-const cardBox =
-  'rounded-2xl border border-primary-light bg-white dark:border-primary-dark dark:bg-primary-darker';
 const sectionTitle = 'text-center font-display text-3xl font-bold md:text-4xl';
 
 const openingHours = [
@@ -63,30 +62,15 @@ const faq = [
 export default function Visite() {
   return (
     <>
-      {/* Header */}
-      <section className="bg-sand dark:bg-primary-darker">
-        <div className={`${container} flex flex-col gap-3 py-10 md:py-14`}>
-          <nav aria-label="Fil d'Ariane" className="text-sm text-primary-dark dark:text-sand">
-            <ol className="flex gap-2">
-              <li>
-                <Link to="/" className="hover:underline">
-                  Accueil
-                </Link>
-              </li>
-              <li aria-hidden="true">/</li>
-              <li aria-current="page">Visite</li>
-            </ol>
-          </nav>
-          <h1 className="font-display text-4xl leading-tight font-bold md:text-5xl">Préparer sa visite</h1>
-          <p className="text-base text-primary-dark md:text-lg dark:text-sand">
-            Horaires, tarifs et conseils pour profiter pleinement de votre journée.
-          </p>
-        </div>
-      </section>
+      <PageHeader
+        breadcrumb="Visite"
+        title="Préparer sa visite"
+        subtitle="Horaires, tarifs et conseils pour profiter pleinement de votre journée."
+      />
 
       {/* Hours + park map */}
       <section className={`${container} grid gap-8 pt-12 md:grid-cols-2 md:items-start`}>
-        <div className={`${cardBox} flex flex-col gap-4 p-6 md:p-8`}>
+        <div className={`${cardClass} flex flex-col gap-4 p-6 md:p-8`}>
           <h2 className="font-display text-2xl font-bold">Horaires</h2>
           <dl className="flex flex-col">
             {openingHours.map((item) => (
@@ -101,7 +85,7 @@ export default function Visite() {
           </dl>
         </div>
 
-        <div className={`${cardBox} flex flex-col gap-4 p-6 md:p-8`}>
+        <div className={`${cardClass} flex flex-col gap-4 p-6 md:p-8`}>
           <h2 className="font-display text-2xl font-bold">Plan du parc</h2>
           <ul className="grid grid-cols-2 gap-3">
             {zones.map((zone) => (
@@ -156,7 +140,7 @@ export default function Visite() {
         <h2 className={sectionTitle}>Questions fréquentes</h2>
         <div className="flex flex-col gap-3">
           {faq.map((item) => (
-            <details key={item.question} open className={`${cardBox} px-5 py-5`}>
+            <details key={item.question} open className={`${cardClass} px-5 py-5`}>
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold [&::-webkit-details-marker]:hidden">
                 {item.question}
                 <span aria-hidden="true" className="text-xl leading-none">
