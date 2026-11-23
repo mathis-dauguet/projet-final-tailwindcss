@@ -1,6 +1,8 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import Checkbox from '../components/Checkbox';
+import Input from '../components/Input';
+import Select from '../components/Select';
 
 const slots = [
   { value: 'matin', label: 'Matin', hours: '9h – 11h' },
@@ -35,12 +37,20 @@ function readChoices(form: HTMLFormElement): Choices {
 
 const formatPrice = (value: number) => `${value}\u00a0€`;
 
+// "2026-11-12" -> "jeudi 12 novembre 2026" (T00:00 keeps the local day instead of UTC)
+const formatDate = (value: string) =>
+  new Date(`${value}T00:00`).toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+type Confirmation = { firstName: string; email: string; date: string; total: number };
+
 const cardBox = 'rounded-2xl border border-primary-light bg-white dark:border-primary-dark dark:bg-primary-darker';
 const sectionTitle = 'font-display text-lg font-bold';
 const label = 'text-xs font-semibold';
-const input =
-  'w-full rounded-lg border border-primary-light bg-white px-3 py-2.5 text-sm outline-none transition-colors placeholder:text-primary-dark/60 focus:border-primary focus:ring-2 focus:ring-primary-light dark:border-primary-dark dark:bg-primary-darkest dark:scheme-dark dark:placeholder:text-sand/60 dark:focus:border-secondary dark:focus:ring-secondary/30';
-
 function Required() {
   return (
     <span className="text-error dark:text-danger-light" aria-hidden="true">
@@ -51,10 +61,30 @@ function Required() {
 
 export default function Reservation() {
   const [summary, setSummary] = useState(() => getSummary(DEFAULTS));
+  const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
+  const confirmationRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (confirmation) confirmationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [confirmation]);
 
   const updateSummary = (event: FormEvent<HTMLFormElement>) => setSummary(getSummary(readChoices(event.currentTarget)));
   // The reset event fires before the fields are cleared, so we use the defaults directly
-  const resetSummary = () => setSummary(getSummary(DEFAULTS));
+  const resetSummary = () => {
+    setSummary(getSummary(DEFAULTS));
+    setConfirmation(null);
+  };
+
+  const confirm = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    setConfirmation({
+      firstName: String(data.get('name')).trim().split(' ')[0],
+      email: String(data.get('email')),
+      date: formatDate(String(data.get('date'))),
+      total: summary.total,
+    });
+  };
 
   return (
     <>
@@ -81,8 +111,21 @@ export default function Reservation() {
 
       {/* Form */}
       <section className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-8 md:py-12 lg:grid-cols-3">
+        {/* Confirmation */}
+        <div ref={confirmationRef} role="status" className="empty:hidden lg:col-span-3">
+          {confirmation && (
+            <div className="flex flex-col gap-1 rounded-2xl border-2 border-primary bg-primary-lighter px-5 py-4 dark:border-secondary dark:bg-primary-darker">
+              <p className="font-display text-lg font-bold">Réservation confirmée !</p>
+              <p className="text-sm text-primary-dark dark:text-sand">
+                Merci {confirmation.firstName} ! Vos billets ({formatPrice(confirmation.total)}) seront envoyés à{' '}
+                {confirmation.email}. Rendez-vous le {confirmation.date}.
+              </p>
+            </div>
+          )}
+        </div>
+
         <form
-          onSubmit={(event) => event.preventDefault()}
+          onSubmit={confirm}
           onChange={updateSummary}
           onReset={resetSummary}
           className={`${cardBox} flex flex-col gap-6 p-5 md:p-6 lg:col-span-2`}
@@ -96,21 +139,20 @@ export default function Reservation() {
                   Nom complet
                   <Required />
                 </label>
-                <input id="name" name="name" type="text" autoComplete="name" required className={input} />
+                <Input id="name" name="name" autoComplete="name" required />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="email" className={label}>
                   E-mail
                   <Required />
                 </label>
-                <input
+                <Input
                   id="email"
                   name="email"
                   type="email"
                   autoComplete="email"
                   placeholder="vous@exemple.fr"
                   required
-                  className={input}
                 />
               </div>
             </div>
@@ -125,31 +167,31 @@ export default function Reservation() {
                   Date de visite
                   <Required />
                 </label>
-                <input id="date" name="date" type="date" required className={input} />
+                <Input id="date" name="date" type="date" required />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="visit-type" className={label}>
                   Type de visite
                   <Required />
                 </label>
-                <select id="visit-type" name="visitType" required className={input}>
+                <Select id="visit-type" name="visitType" placeholder="Sélectionner" required>
                   <option value="libre">Visite libre</option>
                   <option value="guidee">Visite guidée</option>
-                </select>
+                </Select>
               </div>
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="adults" className={label}>
                   Adultes (24 €)
                   <Required />
                 </label>
-                <input id="adults" name="adults" type="number" min={1} defaultValue={DEFAULTS.adults} required className={input} />
+                <Input id="adults" name="adults" type="number" min={1} defaultValue={DEFAULTS.adults} required />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="children" className={label}>
                   Enfants 3-11 ans (14 €)
                   <Required />
                 </label>
-                <input id="children" name="children" type="number" min={0} defaultValue={DEFAULTS.children} required className={input} />
+                <Input id="children" name="children" type="number" min={0} defaultValue={DEFAULTS.children} required />
               </div>
             </div>
 
@@ -193,12 +235,11 @@ export default function Reservation() {
               <label htmlFor="message" className={label}>
                 Message ou besoin particulier
               </label>
-              <input
+              <Input
                 id="message"
                 name="message"
-                type="text"
+               
                 placeholder="Accessibilité, allergies, anniversaire…"
-                className={input}
               />
             </div>
           </div>
