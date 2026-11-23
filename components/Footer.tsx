@@ -9,8 +9,8 @@ const links = [
 
 export default function Footer() {
   return (
-    <footer className="bg-primary-darker dark:bg-primary-black px-10 py-8 text-cream">
-      <div className="mx-auto flex max-w-5xl flex-col gap-10 md:flex-row md:justify-between">
+    <footer className="bg-primary-darker py-10 text-cream dark:bg-primary-black">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 md:grid-cols-3">
         <div className="flex max-w-xs flex-col gap-2">
           <h2 className="font-display text-2xl font-bold">Zoo Baobab</h2>
           <p className="text-sm leading-6 text-sand">
@@ -18,7 +18,6 @@ export default function Footer() {
           </p>
         </div>
 
-        <div className="flex gap-16">
           <nav className="flex flex-col gap-2">
             <h3 className="text-xs font-semibold uppercase text-sand">Explorer</h3>
             {links.map((link) => (
@@ -38,10 +37,9 @@ export default function Footer() {
               <a href="tel:0100000000" className="hover:underline">01 00 00 00 00</a>
             </address>
           </div>
-        </div>
       </div>
 
-      <p className="mt-8 text-center text-sm text-sand">
+      <p className="mt-8 px-4 text-center text-sm text-sand">
         © 2026 Zoo Baobab — Projet pédagogique, contenu fictif.
       </p>
     </footer>

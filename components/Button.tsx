@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 
-type Variant = 'primary' | 'secondary' | 'gold';
+type Variant = 'primary' | 'secondary' | 'gold' | 'outline';
 
 const variants: Record<Variant, string> = {
   primary:
@@ -10,6 +10,8 @@ const variants: Record<Variant, string> = {
     'border-2 border-primary px-6 text-primary-dark hover:bg-primary-light dark:border-secondary-light dark:text-sand dark:hover:bg-primary-dark',
   gold: 
     'bg-secondary px-8 text-primary-darkest hover:bg-secondary-light',
+  outline:
+    'border-2 border-sand px-6 text-sand hover:bg-primary-darker dark:hover:bg-primary-dark',
 };
 
 type ButtonProps = {
