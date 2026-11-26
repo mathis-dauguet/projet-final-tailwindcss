@@ -6,4 +6,4 @@
 ## Répartition
 - Mathis : hébergement, maquette, header, footer, tailwindcss config (theme, ...), page Accueil
 - Allan : page Animaux, page Visite
-- Adrien : page Réservation
+- Adrien : page Réservation, page notfound
